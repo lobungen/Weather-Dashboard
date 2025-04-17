@@ -1,3 +1,6 @@
+import { v4 as uuidv4 } from 'uuid';  // Import UUID package
+import fs from 'fs';
+import path from 'path';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -39,8 +42,7 @@ class Weather {
     this.icon = icon;
     this.temp = temp;
     this.windSpeed = windSpeed;
-  }
-}
+}}
 
 
 // TODO: Complete the WeatherService class
@@ -49,17 +51,18 @@ class WeatherService {
   private baseURL: string;
   private apiKey: string;
   private cityName: string;
+  private state: string = '';
+  private country!: string;
 
   constructor() {
-    this.baseURL = 'https://api.openweathermap.org/data/2.5/';
+    this.baseURL = process.env.API_BASE_URL || '';
     this.apiKey = process.env.WEATHER_API_KEY || '';
     this.cityName = '';
   }
   // TODO: Create fetchLocationData method
    private async fetchLocationData(query: string) {
-    const response = await fetch(
-      `${this.baseURL}geo/1.0/direct?q=${query}&limit=1&appid=${this.apiKey}`
-    );
+    const url = `${this.baseURL}direct?q=${query}&limit=1&appid=${this.apiKey}`;
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error('Failed to fetch location data');
     }
@@ -145,19 +148,63 @@ class WeatherService {
     });
     return forecast;
    }
-  // TODO: Complete getWeatherForCity method
-   async getWeatherForCity(city: string) {
+  // Removed duplicate implementation of getWeatherForCity
+     // Method to save search history to a JSON file
+  private saveSearchHistory(city: string) {
+    const searchHistoryPath = path.join(__dirname, 'searchHistory.json');
+
+    // Read current search history if the file exists
+    let searchHistory = [];
+    if (fs.existsSync(searchHistoryPath)) {
+      const data = fs.readFileSync(searchHistoryPath, 'utf-8');
+      searchHistory = JSON.parse(data);
+    }
+
+    // Create a new search entry with a unique ID
+    const searchEntry = {
+      id: uuidv4(),
+      cityName: city,
+      timestamp: new Date().toISOString(),
+    };
+
+    // Push the new search entry into the history
+    searchHistory.push(searchEntry);
+
+    // Write the updated search history to the file
+    fs.writeFileSync(searchHistoryPath, JSON.stringify(searchHistory, null, 2));
+  }
+
+  // Method to retrieve the search history from the JSON file
+  private getSearchHistory() {
+    const searchHistoryPath = path.join(__dirname, 'searchHistory.json');
+
+    if (fs.existsSync(searchHistoryPath)) {
+      const data = fs.readFileSync(searchHistoryPath, 'utf-8');
+      return JSON.parse(data);
+    }
+    return [];
+  }
+
+  // Get weather for a city and save the city search to history
+  async getWeatherForCity(city: string) {
     this.cityName = city;
     const locationData = await this.fetchAndDestructureLocationData();
     const weatherData = await this.fetchWeatherData(locationData);
     const currentWeather = this.parseCurrentWeather(weatherData);
     const forecastArray = this.buildForecastArray(currentWeather, weatherData);
+
+    // Save the city search to the history
+    this.saveSearchHistory(city);
+
+    // Return the weather data along with the search history
     return {
       currentWeather,
       forecastArray,
       locationData,
+      searchHistory: this.getSearchHistory(),
     };
-   }
+  }
 }
+
 
 export default new WeatherService();

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 const router = Router();
 
 import HistoryService from '../../service/historyService.js';
@@ -24,20 +24,20 @@ router.post('/history', async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'City name is required' });
   }
   try {
-    const historyService = new HistoryService();
-    await historyService.saveCityToHistory(city);
-    res.status(200).json({ message: `City ${city} saved to search history` });
+    const historyService = HistoryService;
+    await historyService.addCity(city);
+    return res.status(200).json({ message: `City ${city} saved to search history` });
   } catch (error) {
     console.error('Error saving city to search history:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 // TODO: GET search history
-router.get('/history', async (req: Request, res: Response) => {
+router.get('/history', async (_: Request, res: Response) => {
   try {
-    const historyService = new HistoryService();
-    const history = await historyService.getSearchHistory();
+    const historyService = HistoryService;
+    const history = await historyService.getCities();
     res.status(200).json(history);
   } catch (error) {
     console.error('Error fetching search history:', error);
@@ -49,8 +49,7 @@ router.get('/history', async (req: Request, res: Response) => {
 router.delete('/history/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const historyService = new HistoryService();
-    await historyService.deleteCityFromHistory(id);
+    await HistoryService.removeCity(id);
     res.status(200).json({ message: `City with ID ${id} deleted from search history` });
   } catch (error) {
     console.error('Error deleting city from search history:', error);

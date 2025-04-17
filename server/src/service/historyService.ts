@@ -7,7 +7,7 @@ class City {
   name: string;
   id: string;
 
-  constructor(public name: string, public id: string = uuidv4()) {
+  constructor(name: string, id: string) {
     this.name = name;
     this.id = id;
   }
@@ -21,23 +21,14 @@ class HistoryService {
     return JSON.parse(history);
    }
   // TODO: Define a getCities method that reads the cities from the searchHistory.json file and returns them as an array of City objects
-   async getCities(): Promise<City[]> {
-    const filePath = path.join(__dirname, '../data/searchHistory.json');
-    return new Promise<City[]>((resolve, reject) => {
-      fs.readFile(filePath, 'utf-8', (err, data) => {
-        if (err) {
-          reject(err);
-        } else {
-          const cities = JSON.parse(data) as City[];
-          resolve(cities);
-        }
-      });
-    });
-   }
+  async getCities(): Promise<City[]> {
+    const cities = await this.read();
+    return cities as City[];
+  }
   // TODO Define an addCity method that adds a city to the searchHistory.json file
    async addCity(city: string) {
     const cities = await this.getCities();
-    const newCity = new City(city);
+    const newCity = new City(city, uuidv4());
     cities.push(newCity);
     await this.write(cities);
     return newCity;
@@ -48,6 +39,12 @@ class HistoryService {
     const updatedCities = cities.filter((city) => city.id !== id);
     await this.write(updatedCities);
     return updatedCities;
+   }
+
+  // TODO: Define a write method that writes the updated cities array to the searchHistory.json file
+   private async write(cities: City[]) {
+    const filePath = path.join(__dirname, '../data/searchHistory.json');
+    await fs.promises.writeFile(filePath, JSON.stringify(cities, null, 2), 'utf-8');
    }
 }
 

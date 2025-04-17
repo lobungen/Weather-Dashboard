@@ -1,5 +1,5 @@
-const express = require('express');
-const path = require('path');
+import express from 'express';
+import path from 'path';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static('server'));
 
 // Catch-all route that sends index.html
-app.get('*', (req, res) => {
+app.get('*', (_, res) => {
   res.sendFile(path.join(__dirname, 'server', 'index.html'));
 });
 
