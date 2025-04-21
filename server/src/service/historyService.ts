@@ -1,6 +1,5 @@
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import path from 'path';
 
 // TODO: Define a City class with name and id properties
 class City {
@@ -15,11 +14,15 @@ class City {
 
 // TODO: Complete the HistoryService class
 class HistoryService {
+  constructor() {
+  }
+
   // TODO: Define a read method that reads from the searchHistory.json file
-   private async read() {
+  private async read() {
     const history = await fs.promises.readFile('db/db.json', 'utf-8');
     return JSON.parse(history);
-   }
+  }
+   
   // TODO: Define a getCities method that reads the cities from the searchHistory.json file and returns them as an array of City objects
   async getCities(): Promise<City[]> {
     const cities = await this.read();
@@ -42,9 +45,8 @@ class HistoryService {
    }
 
   // TODO: Define a write method that writes the updated cities array to the searchHistory.json file
-   private async write(cities: City[]) {
-    const filePath = path.join(__dirname, '../data/searchHistory.json');
-    await fs.promises.writeFile(filePath, JSON.stringify(cities, null, 2), 'utf-8');
+  private async write(cities: City[]) {
+    await fs.promises.writeFile('db/db.json', JSON.stringify(cities));
    }
 }
 

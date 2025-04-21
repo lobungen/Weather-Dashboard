@@ -8,7 +8,8 @@ import WeatherService from '../../service/weatherService.js';
 router.post('/', async (req: Request, res: Response) => {
   try {
     const { city } = req.body;
-    const weatherData = await WeatherService.getWeatherForCity(city);
+    const weatherService = new WeatherService();
+    const weatherData = await weatherService.getWeatherForCity(city);    
     await HistoryService.addCity(city);
     //ensures saved data has proper casing regardless of input
     res.json(weatherData);
@@ -24,8 +25,7 @@ router.post('/history', async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'City name is required' });
   }
   try {
-    const historyService = HistoryService;
-    await historyService.addCity(city);
+    await HistoryService.addCity(city);
     return res.status(200).json({ message: `City ${city} saved to search history` });
   } catch (error) {
     console.error('Error saving city to search history:', error);
@@ -36,11 +36,10 @@ router.post('/history', async (req: Request, res: Response) => {
 // TODO: GET search history
 router.get('/history', async (_: Request, res: Response) => {
   try {
-    const historyService = HistoryService;
-    const history = await historyService.getCities();
-    res.status(200).json(history);
-  } catch (error) {
-    console.error('Error fetching search history:', error);
+    const history = await HistoryService.getCities();
+    res.json(history);
+  } catch (err) {
+    console.log(err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
