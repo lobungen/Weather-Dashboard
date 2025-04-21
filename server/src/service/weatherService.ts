@@ -54,9 +54,13 @@ class WeatherService {
     this.baseURL = process.env.API_BASE_URL || '';
     this.apiKey = process.env.WEATHER_API_KEY || '';
     this.cityName = '';
+
+    console.log('Base URL:', this.baseURL);
+    console.log('API Key present:', !!this.apiKey);
   }
   // TODO: Create fetchLocationData method
    private async fetchLocationData(query: string) {
+    console.log('Geocode query:', query);
   const response = await fetch(query);
   const locationData = await response.json();
 
@@ -152,7 +156,11 @@ class WeatherService {
   
      // TODO: Complete getWeatherForCity method
   async getWeatherForCity(city: string) {
-    this.cityName = city;
+    if (!city || typeof city !== 'string' || city.trim() === '') {
+      throw new Error('City name is required');
+    }
+    this.cityName = city.trim();
+
     const locationData = await this.fetchAndDestructureLocationData();
     const weatherData = await this.fetchWeatherData(locationData);
     const currentWeather = this.parseCurrentWeather(weatherData);

@@ -34,7 +34,7 @@ API Calls
 
 */
 
-const fetchWeather = async (cityName: string) => {
+const fetchWeatherData = async (cityName: string) => {
   const response = await fetch('/api/weather/', {
     method: 'POST',
     headers: {
@@ -257,7 +257,7 @@ const handleSearchFormSubmit = (event: any): void => {
   }
 
   const search: string = searchInput.value.trim();
-  fetchWeather(search).then(() => {
+  fetchWeatherData(search).then(() => {
     getAndRenderHistory();
   });
   searchInput.value = '';
@@ -266,7 +266,7 @@ const handleSearchFormSubmit = (event: any): void => {
 const handleSearchHistoryClick = (event: any) => {
   if (event.target.matches('.history-btn')) {
     const city = event.target.textContent;
-    fetchWeather(city).then(getAndRenderHistory);
+    fetchWeatherData(city).then(getAndRenderHistory);
   }
 };
 
